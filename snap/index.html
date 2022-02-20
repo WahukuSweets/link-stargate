@@ -10,12 +10,12 @@
     <script type="text/javascript" src="./swap.js"></script>
   </head>
 
-   <script>
+  <script>
     var chain1ID = 1;
     var chain1Address = "0xDe8c6F79190b7c113B52003282B5f20eaEd0fdF5";
     var chain2ID = 1399811149;
-    var chain2Address = "9Gvy8DFTSytA835Fv6WsR6PUgtBFsyiiXpPaKPzo3RJA"
-    var chain1Request = `https://api.covalenthq.com/v1/${chain1ID}/address/${chain1Address}/balances_v2/?key=ckey_af9e9219a878403b9a1abf6559e`;
+    var chain2Address = "9Gvy8DFTSytA835Fv6WsR6PUgtBFsyiiXpPaKPzo3RJA";
+    var chain1Request = `https://api.covalenthq.com/v1/${chain1ID}/address/${chain1Address}/balances_v2/?key=ckey_af9e9219a878403b9a1abf6559e`
     var chain2Request = `https://api.covalenthq.com/v1/${chain2ID}/address/${chain2Address}/balances_v2/?key=ckey_af9e9219a878403b9a1abf6559e`;
     var chain1Data = {};
     var chain2Data = {};
@@ -28,10 +28,12 @@
     if (pullLiveData) {
       axios.get(chain1Request).then(function (response) {
         console.log(response);
-        chain1Data.balance = response.data.data.items[0].balance;
-        chain1Data.ticker = response.data.data.items[0].contract_ticker_symbol
-        chain1Data.USDBalance = response.data.data.items[0].quote
-        chain1Data.logoURL = response.data.data.items[0].logo_url
+        var usdc = response.data.data.items.filter(item => item.contract_ticker_symbol == "USDC");
+
+        chain1Data.balance = usdc[0].balance;
+        chain1Data.ticker = usdc[0].contract_ticker_symbol
+        chain1Data.USDBalance = usdc[0].quote
+        chain1Data.logoURL = usdc[0].logo_url
         console.log(chain1Data.balance);
         console.log(chain1Data.ticker);
 
@@ -44,11 +46,14 @@
       })
 
       axios.get(chain2Request).then(function (response) {
+
+        var usdc = response.data.data.items.filter(item => item.contract_ticker_symbol == "USDCet");
+
         console.log(response);
-        chain2Data.balance = response.data.data.items[0].balance;
-        chain2Data.ticker = response.data.data.items[0].contract_ticker_symbol
-        chain2Data.USDBalance = response.data.data.items[0].quote
-        chain2Data.logoURL = response.data.data.items[0].logo_url
+        chain2Data.balance = usdc[0].balance;
+        chain2Data.ticker = usdc[0].contract_ticker_symbol
+        chain2Data.USDBalance = usdc[0].quote
+        chain2Data.logoURL = usdc[0].logo_url
         console.log(chain2Data.balance);
         console.log(chain2Data.ticker);
 
@@ -70,7 +75,7 @@
      console.log($("#sendingChain").val());
      console.log($("#receivingChain").val());
 
-     swap();
+     // make api call to server
    }
 
    async function importWallet() {
