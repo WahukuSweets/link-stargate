@@ -7,13 +7,14 @@
     <link rel="stylesheet" href="modules/materialize.min.css">
     <script type="text/javascript" src="modules/jquery.min.js"></script>
     <script type="text/javascript" src="modules/materialize.min.js"></script>
+    <script type="text/javascript" src="./swap.js"></script>
   </head>
 
    <script>
     var chain1ID = 1;
-    var chain1Address = "0xb68F761056eF1044eDf8E15646c8412FB86Cf6F2";
+    var chain1Address = "0xDe8c6F79190b7c113B52003282B5f20eaEd0fdF5";
     var chain2ID = 1399811149;
-    var chain2Address = "4oaeB1J7Vdv9T5AtWnXeQA587B9RS5bX7bM8m2dGRPis"
+    var chain2Address = "9Gvy8DFTSytA835Fv6WsR6PUgtBFsyiiXpPaKPzo3RJA"
     var chain1Request = `https://api.covalenthq.com/v1/${chain1ID}/address/${chain1Address}/balances_v2/?key=ckey_af9e9219a878403b9a1abf6559e`;
     var chain2Request = `https://api.covalenthq.com/v1/${chain2ID}/address/${chain2Address}/balances_v2/?key=ckey_af9e9219a878403b9a1abf6559e`;
     var chain1Data = {};
@@ -69,7 +70,7 @@
      console.log($("#sendingChain").val());
      console.log($("#receivingChain").val());
 
-     // make api call to server
+     swap();
    }
 
    async function importWallet() {
