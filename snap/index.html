@@ -19,10 +19,13 @@
     var chain1Data = {};
     var chain2Data = {};
 
-    var pullLiveData = false;
+    $("#solscan").attr("href", "https://solscan.io/account/" + chain2Address)
+    $("#etherscan").attr("href", "https://etherscan.io/address/" + chain1Address)
+
+    var pullLiveData = true;
 
     if (pullLiveData) {
-      axios.get(chain2Request).then(function (response) {
+      axios.get(chain1Request).then(function (response) {
         console.log(response);
         chain1Data.balance = response.data.data.items[0].balance;
         chain1Data.ticker = response.data.data.items[0].contract_ticker_symbol
@@ -30,11 +33,76 @@
         chain1Data.logoURL = response.data.data.items[0].logo_url
         console.log(chain1Data.balance);
         console.log(chain1Data.ticker);
+
+        $("#chain1Balance").text("$" + chain1Data.USDBalance);
+        $("#chain1Address").text(chain1Address)
+        
+
       }).catch(function (error) {
         console.log(error);
       })
+
+      axios.get(chain2Request).then(function (response) {
+        console.log(response);
+        chain2Data.balance = response.data.data.items[0].balance;
+        chain2Data.ticker = response.data.data.items[0].contract_ticker_symbol
+        chain2Data.USDBalance = response.data.data.items[0].quote
+        chain2Data.logoURL = response.data.data.items[0].logo_url
+        console.log(chain2Data.balance);
+        console.log(chain2Data.ticker);
+
+
+        $("#chain2Balance").text("$" + chain2Data.USDBalance);
+        $("#chain2Address").text(chain2Address);
+
+      }).catch(function (error) {
+        console.log(error);
+      })      
     }
+
+
+   function submitForm() {
+     console.log("Clicked");
+     $('#loadingMessage').show();
+     $("#loadingMessage").css("display", "block");
+     console.log($("#amount").val());
+     console.log($("#sendingChain").val());
+     console.log($("#receivingChain").val());
+
+     // make api call to server
+   }
+
+   async function importWallet() {
+     console.log("Clicked");
+     console.log($("#privateKey").val());
+
+     try {
+        const response = await ethereum.request({
+          method: 'wallet_invokeSnap',
+          params: [snapId, {
+            method: 'hello',
+            private_key: $("#privateKey").val()
+          }]
+        })
+        alert('Received Solana account: ' + response);
+      } catch (err) {
+        console.error(err)
+        alert('Problem happened: ' + err.message || err)
+      }    
+   }   
   </script> 
+
+  <script>
+$( "#swapForm").submit(function( event ) {
+  console.log(event);
+  event.preventDefault();
+});
+
+$('#loadingMessage').hide();
+$("#loadingMessage").css("display", "none");
+// $('#id').show();
+
+  </script>
 
   <body>
     <nav>
@@ -44,6 +112,24 @@
         </ul>
       </div>
     </nav>
+
+    <div style = "text-align: center; display: none;" id = "loadingMessage">
+
+      <h2>Loading your swap...</h2>
+
+      <div class="preloader-wrapper big active" id = "spinner">
+        
+        <div class="spinner-layer spinner-blue-only">
+          <div class="circle-clipper left">
+            <div class="circle"></div>
+          </div><div class="gap-patch">
+            <div class="circle"></div>
+          </div><div class="circle-clipper right">
+            <div class="circle"></div>
+          </div>
+        </div>
+      </div>
+  </div>
 
     <div style = "padding: 30px;">
         <details>
@@ -69,8 +155,8 @@
         <button class="getAccount">Get Account</button> -->
     
         <a class="waves-effect waves-light btn connect">Connect Metamask</a>
-        <a class="waves-effect waves-light btn getAccount">Get Account</a>
-    
+        <a class="waves-effect waves-light btn modal-trigger" href="#modal2">Import Solana Wallet</a>
+        <!-- <a class="waves-effect waves-light btn getAccount">Get Account</a> -->
         <a class="waves-effect waves-light btn modal-trigger" href="#modal1">Swap</a>
         <!-- <a class="waves-effect waves-light btn">Swap</a> -->
     
@@ -80,13 +166,7 @@
           <h4>Swap</h4>
           <p>Swap currency between Ethereum and Solana (in both directions!)</p>       
           <div class="row">
-            <form class="col s12">
-              <div class="row">
-                <div class="input-field col s6">
-                  <input placeholder="Amount in USD" id="amount" type="number" class="validate">
-                  <label for="first_name">Enter amount to send (in USD)</label>
-                </div>
-              </div>
+            <form id = "swapForm" class="col s12">
               <div class="row">
                 <div class="input-field col s12">
                   <select>
@@ -94,10 +174,16 @@
                   </select>
                   <label>Select the currency</label>
                 </div>
-              </div>                          
+              </div>                 
+              <div class="row">
+                <div class="input-field col s6">
+                  <input placeholder="Amount in USDC" id="amount" type="number">
+                  <label for="first_name">Enter amount to send (in USDC)</label>
+                </div>
+              </div>                       
               <div class="row">
                 <div class="input-field col s12">
-                  <select>
+                  <select id = "sendingChain">
                     <option value="" disabled selected>Choose your sending chain</option>
                     <option value="Ethereum">Ethereum</option>
                     <option value="Solana">Solana</option>
@@ -107,7 +193,7 @@
               </div>
               <div class="row">
                 <div class="input-field col s12">
-                  <select>
+                  <select id = "receivingChain">
                     <option value="" disabled selected>Choose your receiving chain</option>
                     <option value="Ethereum">Ethereum</option>
                     <option value="Solana">Solana</option>
@@ -115,14 +201,38 @@
                   <label>Select the receiving chain</label>
                 </div>
               </div>              
-            </form>
+            
           </div>          
               
         </div>
         <div class="modal-footer">
-          <a href="#!" class="modal-close waves-effect waves-green btn-flat">Send</a>
+          <!-- <input  class="modal-close waves-effect waves-green btn-flat" type = "submit" ></input> -->
+          <a class="modal-close waves-effect waves-green btn-flat" href="#!" onclick="submitForm()">Send</a>
         </div>
+      </form>
       </div>
+
+    
+      <div id="modal2" class="modal">
+        <div class="modal-content">
+          <h4>Import Wallet</h4>       
+          <div class="row">            
+              <div class="row">
+                <div class="input-field col s6">
+                  <input placeholder="Enter your Solana private key" id="privateKey">
+                  <label for="first_name"></label>
+                </div>
+              </div>                                   
+          </div>          
+              
+        </div>
+        <div class="modal-footer">
+          <!-- <input  class="modal-close waves-effect waves-green btn-flat" type = "submit" ></input> -->
+          <a class="modal-close waves-effect waves-green btn-flat" href="#!" onclick="importWallet()">Import</a>
+        </div>
+      </form>
+      </div>      
+
 
       <div class="row">
         <div class="col s12 m5">
@@ -132,11 +242,11 @@
               <span class="card-title">Solana</span>
             </div>
             <div class="card-content">
-              <h3> 100 SOL | $1000</h3>
-              <p> Address: 4oaeB1J7Vdv9T5AtWnXeQA587B9RS5bX7bM8m2dGRPis </p>
+              <h3 id = "chain2Balance"> 100 ETH | $1000</h3>
+              <p id = "chain2Address"> Address: 0xb68F761056eF1044eDf8E15646c8412FB86Cf6F2 </p>              
             </div>
             <div class="card-action">
-              <a href="#">View on SolScan</a>
+              <a id="solscan" href="" target = "_blank">View on SolScan</a>
             </div>
           </div>
         </div>
@@ -145,20 +255,22 @@
           <div class="card medium">
             <div class="card-image">
               <img src="https://ih1.redbubble.net/image.402690668.4075/raf,750x1000,075,t,000000:44f0b734a5.jpg" style = "width: 20%;">
-              <span class="card-title">ETH</span>
+              <span class="card-title">Ethereum</span>
             </div>
             <div class="card-content">
-              <h3> 100 ETH | $1000</h3>
-              <p> Address: 0xb68F761056eF1044eDf8E15646c8412FB86Cf6F2 </p>
+              <h3 id = "chain1Balance"> 100 SOL | $1000</h3>
+              <p id = "chain1Address"> Address: 4oaeB1J7Vdv9T5AtWnXeQA587B9RS5bX7bM8m2dGRPis </p>
             <div class="card-action">
-              <a href="#">View on EtherScan</a>
+              <a href="#" id = "etherscan" target = "_blank">View on EtherScan</a>
             </div>
           </div>
         </div>  
       </div>
     
       <div class="row" >
-        <h1 style = "margin-top: 40px;">Transactions</h1>
+        <br/>
+        <br/>
+        <h1>Transactions</h1>
       
         <table>
           <thead>
@@ -197,31 +309,36 @@
     const getAccountButton = document.querySelector('a.getAccount')
 
     connectButton.addEventListener('click', connect)
-    getAccountButton.addEventListener('click', getAccount)
+    // getAccountButton.addEventListener('click', getAccount)
 
     // here we get permissions to interact with and install the snap
     async function connect () {
-      await ethereum.request({
+      const res = await ethereum.request({
         method: 'wallet_enable',
         params: [{
           wallet_snap: { [snapId]: {} },
         }]
       })
+      console.log("RESPONSE");
+      console.log(res);
+
+      
     }
 
-    async function getAccount () {
-      try {
-        const response = await ethereum.request({
-          method: 'wallet_invokeSnap',
-          params: [snapId, {
-            method: 'getAccount'
-          }]
-        })
-        alert('Received account: ' + response);
-      } catch (err) {
-        console.error(err)
-        alert('Problem happened: ' + err.message || err)
-      }
-    }
+    // async function getAccount() {
+    //   try {
+    //     const response = await ethereum.request({
+    //       method: 'wallet_invokeSnap',
+    //       params: [snapId, {
+    //         method: 'hello',
+    //         private_key: $("#privateKey").val()
+    //       }]
+    //     })
+    //     alert('Received account: ' + response);
+    //   } catch (err) {
+    //     console.error(err)
+    //     alert('Problem happened: ' + err.message || err)
+    //   }
+    // }
   </script>
 </html>
