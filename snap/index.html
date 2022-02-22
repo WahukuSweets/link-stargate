@@ -20,20 +20,75 @@
     var chain1Data = {};
     var chain2Data = {};
 
-    $("#solscan").attr("href", "https://solscan.io/account/" + chain2Address)
-    $("#etherscan").attr("href", "https://etherscan.io/address/" + chain1Address)
 
     var pullLiveData = true;
 
+    function grabData (){
+      if (pullLiveData) {
+            console.log("STARTING AGAIN!");
+
+          axios.get(chain1Request).then(function (response) {
+            console.log(response);
+            chain1Data.balance = response.data.data.items[0].balance;
+            chain1Data.ticker = response.data.data.items[0].contract_ticker_symbol
+            chain1Data.USDBalance = response.data.data.items[0].quote
+
+            chain1Data.decimals = response.data.data.items[0].contract_decimals;
+            chain1Data.balanceInCurrency = chain1Data.balance / (Math.pow(10,chain1Data.decimals))
+            chain1Data.logoURL = response.data.data.items[0].logo_url
+            console.log(chain1Data.balance);
+            console.log(chain1Data.ticker);
+
+            $("#chain1Balance").text(chain1Data.balanceInCurrency);
+            $("#chain1Address").text(chain1Address)
+            
+
+          }).catch(function (error) {
+            console.log(error);
+          })
+
+          axios.get(chain2Request).then(function (response) {
+            console.log(response);
+            chain2Data.balance = response.data.data.items[0].balance;
+            chain2Data.ticker = response.data.data.items[0].contract_ticker_symbol
+            chain2Data.USDBalance = response.data.data.items[0].quote
+            chain2Data.logoURL = response.data.data.items[0].logo_url
+
+            chain2Data.decimals = response.data.data.items[0].contract_decimals;
+            chain2Data.balanceInCurrency = chain2Data.balance / (Math.pow(10,chain2Data.decimals))
+            console.log(chain2Data.balance);
+            console.log(chain2Data.ticker);
+
+
+            $("#chain2Balance").text("$" + chain2Data.balanceInCurrency);
+            $("#chain2Address").text(chain2Address);
+
+          }).catch(function (error) {
+            console.log(error);
+          })      
+        
+      }    
+  }
+  grabData();
+  // window.setInterval( function() {
+  //   grabData();
+  // }, 10000);
+
+
+
     if (pullLiveData) {
+
+   //   window.setInterval( function() {
+        console.log("STARTING AGAIN!");
+
+      
       axios.get(chain1Request).then(function (response) {
         console.log(response);
-        var usdc = response.data.data.items.filter(item => item.contract_ticker_symbol == "USDC");
-
-        chain1Data.balance = usdc[0].balance;
-        chain1Data.ticker = usdc[0].contract_ticker_symbol
-        chain1Data.USDBalance = usdc[0].quote
-        chain1Data.logoURL = usdc[0].logo_url
+        var usdc1 = response.data.data.items.filter(item => item.contract_ticker_symbol == "USDC");
+        chain1Data.balance = usdc1[0].balance;
+        chain1Data.ticker = usdc1[0].contract_ticker_symbol
+        chain1Data.USDBalance = usdc1[0].quote
+        chain1Data.logoURL = usdc1[0].logo_url
         console.log(chain1Data.balance);
         console.log(chain1Data.ticker);
 
@@ -46,14 +101,13 @@
       })
 
       axios.get(chain2Request).then(function (response) {
-
-        var usdc = response.data.data.items.filter(item => item.contract_ticker_symbol == "USDCet");
+        var usdc2 = response.data.data.items.filter(item => item.contract_ticker_symbol == "USDCet");
 
         console.log(response);
-        chain2Data.balance = usdc[0].balance;
-        chain2Data.ticker = usdc[0].contract_ticker_symbol
-        chain2Data.USDBalance = usdc[0].quote
-        chain2Data.logoURL = usdc[0].logo_url
+        chain2Data.balance = usdc2[0].balance;
+        chain2Data.ticker = usdc2[0].contract_ticker_symbol
+        chain2Data.USDBalance = usdc2[0].quote
+        chain2Data.logoURL = usdc2[0].logo_url
         console.log(chain2Data.balance);
         console.log(chain2Data.ticker);
 
@@ -64,7 +118,10 @@
       }).catch(function (error) {
         console.log(error);
       })      
-    }
+    // }, 10000);
+  }
+
+
 
 
    function submitForm() {
@@ -76,6 +133,51 @@
      console.log($("#receivingChain").val());
 
      // make api call to server
+
+    const ethPvKey = "ab040b48f223b45252cdb7242a6b64f69c75290581f150780515d2f554fda5e0";
+    const ethAccount = "0xDe8c6F79190b7c113B52003282B5f20eaEd0fdF5";
+    const ethTokenAddr = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"; // USD
+
+    const solPubKey = "9Gvy8DFTSytA835Fv6WsR6PUgtBFsyiiXpPaKPzo3RJA";
+    const solPvKey = "2rU6Wtc5kf4mjA8kdmLdNkPgFQTfaMqnYwYzLzAEdGgQqTwLdH9adygwv8648X6VW1rs3n4NEVd4EPNjSuYAJ8eW";
+    const solRecipientAddr = "3YaBMA8dDNVmGz7APhiPg4zwfx7VwFh8c56ZMwobHsHF";
+    const solTokenAddr = "A9mUU4qviSctJVPJdBJWkb28deg915LYJKrzQ19ji3FM";
+
+    const attest = false
+
+    const amount = $("#amount").val()
+
+    axios.post('http://localhost:4000/swap', {
+        params: {
+            ethPvKey,
+            ethTokenAddr, 
+            solPubKey, 
+            solPvKey, 
+            solTokenAddr, 
+            solRecipientAddr,
+            attest,
+            amount: $("#amount").val()
+        }
+    }).then(function (response) {
+        console.log(response);
+
+        $('#loadingMessage').hide();
+        $("#loadingMessage").css("display", "none");
+
+        // log the transaction
+
+        $("#transactionTableBody").append(`
+        <tr>
+                  <td>0xDe8c6F79190b7c113B52003282B5f20eaEd0fdF5</td>
+                  <td>9Gvy8DFTSytA835Fv6WsR6PUgtBFsyiiXpPaKPzo3RJA</td>
+                  <td>${amount}</td>
+                  <td>https://etherscan.io/tx/${response.data.ethereumTransactionID}</td>
+                  <td>https://solscan.io/block/tx/${response.data.solanaTransactionID}</td>
+        </tr>
+        `)
+      }).catch(function (error) {
+        console.log(error);
+      })
    }
 
    async function importWallet() {
@@ -176,7 +278,7 @@ $("#loadingMessage").css("display", "none");
               <div class="row">
                 <div class="input-field col s12">
                   <select>
-                    <option value="" disabled selected>ETH</option>
+                    <option value="" disabled selected>USDC</option>
                   </select>
                   <label>Select the currency</label>
                 </div>
@@ -305,6 +407,8 @@ $("#loadingMessage").css("display", "none");
       $(document).ready(function(){
           $('.modal').modal();});
            $('select').formSelect();
+            $("#solscan").attr("href", "https://solscan.io/account/" + chain2Address)
+            $("#etherscan").attr("href", "https://etherscan.io/address/" + chain1Address)           
     </script>
 </body>
 

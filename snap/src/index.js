@@ -46,7 +46,7 @@ async function initialize() {
   isInitialized = true;
 
   const bip44CoinTypeNode = await wallet.request({
-    method: 'snap_getBip44Entropy_9004',
+    method: 'snap_getBip44Entropy_501',
   });
 
   const extendedPrivateKey = deriveBIP44AddressKey(bip44CoinTypeNode, {
