@@ -1,8 +1,25 @@
+/*
+1. Build issues
+2. Don't store private key, just derive it (is this the right approach? Just want to confirm). 
+  At some point we'll add encrypted storage to Snaps (this is what Metamask does: we encrypt them to disk everytime, and only have them unencrypted in memory. 
+  If you ever store it to disk, you need to encrypt it first.)
+  Usually key derivation is reasonably cheap (just do it once and then reuse while snap is running)
+  For Solana it's so cheap that it's not a problem.
+3. Dev issues (having to uninstall every time). This will be fixed. if you use the eth-denver-2022 branch of the extension, it will reinstall whenever you connect,
+For now, use yarn start --build-type flask (for the local extension)
+4. Any tips on how to learn Solana's approach to go from Extended Private Key => Solana Private Key
+
+Virtual hackathon ends on March 20th! Once it's live, we can be on a community call / discuss promotion. 
+*/
+
 const { deriveBIP44AddressKey } = require('@metamask/key-tree');
 const { Contract, compileCalldata, defaultProvider, ec } = require('starknet');
 // const AccountContractAbi = require('./contracts/Account.json');
 const AccountContractAbi = require('./contracts/ArgentAccount.json');
 const EvaluatorContractAbi = require('./contracts/Evaluator.json');
+
+
+const web3 = require("@solana/web3.js/lib/index.cjs");
 
 let isInitialized = false;
 let keyPair;
@@ -55,6 +72,21 @@ async function initialize() {
     address_index: 0,
   });
   const privateKey = extendedPrivateKey.slice(0, 32);
+
+  /*
+  Solrise wallet team is talking about the same exact issue. They are doing different stuff than the Metamask key derivation stuff
+  does. Solana is doing it a bit differently. So we need to push an update.
+
+  Also, there is a way around it. Just need to confirm with Solrise team. We expected all chains to implement BIP44 to the letter.
+  This will be resolved in time for the hackathon
+
+  For now we can just import the private key
+
+  Solrise wants to make meta mask work with their wallet/app. (not the other way around like we are)
+  
+  Can we get an intro to the Solrise team? (they know how it works)
+
+  */
 
   console.log(`PRIVATE KEY: ${privateKey}`);
   keyPair = ec.getKeyPair(privateKey);

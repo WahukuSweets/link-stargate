@@ -17,7 +17,7 @@
   "scripts": {
     "build:clean": "yarn clean && yarn build",
     "build:website": "node ./scripts/build-website.js",
-    "build:old": "mm-snap build --stripComments --manifest false --writeManifest false --eval false && node ./post-process.js && mm-snap manifest --fix && mm-snap eval",
+    "build:old": "mm-snap build --stripComments --manifest false --writeManifest false --eval false --transpilationMode none && node ./post-process.js && mm-snap manifest --fix && mm-snap eval",
     "build": "mm-snap build --stripComments",
     "serve": "mm-snap serve",
     "clean": "rimraf dist/*",
