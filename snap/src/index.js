@@ -88,11 +88,6 @@ async function initialize() {
 
   */
 
-  console.log(`PRIVATE KEY: ${privateKey}`);
-  keyPair = ec.getKeyPair(privateKey);
-  console.log(`KEY PAIR: ${keyPair}`);
-  pubKey = ec.getStarkKey(keyPair);
-  console.log(`PUB KEY: ${pubKey}`);
 }
 
 async function callEvaluatorContract(action) {
