@@ -21,16 +21,8 @@ var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 const adapter = require('axios/lib/adapters/xhr')
 const axios = axiosOriginal.create({adapter})
 const web3 = require('@solana/web3.js/lib/index.cjs');
-
-
-// const { Contract, compileCalldata, defaultProvider, ec } = require('starknet');
-// const AccountContractAbi = require('./contracts/Account.json');
-const AccountContractAbi = require('./contracts/ArgentAccount.json');
-const EvaluatorContractAbi = require('./contracts/Evaluator.json');
-
-
-const EVALUATOR_ADDRESS =
-  '0x03b56add608787daa56932f92c6afbeb50efdd78d63610d9a904aae351b6de73';
+// This import causes build issues
+// const certusone = require("@certusone/wormhole-sdk");
 
 wallet.registerRpcMessageHandler(async (originString, requestObject) => {
 
@@ -46,34 +38,23 @@ wallet.registerRpcMessageHandler(async (originString, requestObject) => {
         method: 'snap_confirm',
         params: [
           {
-            prompt: `Hello, ${originString}!`,
+            prompt: `Hello!`,
             description:
-              'This custom confirmation is just for display purposes.',
+              'Please approve your bridging transactions',
             textAreaContent:
-              'But you can edit the snap source code to make it do something, if you want to!',
+              'We will be using Wormhole to bridge between your SOL and ETH assets within Metamask',
           },
         ],
       })
       return await sendTransaction(requestObject.amount)
 
+    case 'create':
+      return await createSolPrivateKey()
+      
     default:
       throw new Error('Method not found.');
   }
 });
-
-// async function initialize() {
-//   isInitialized = true;
-
-//   const bip44CoinTypeNode = await wallet.request({
-//     method: 'snap_getBip44Entropy_501',
-//   });
-
-//   const extendedPrivateKey = deriveBIP44AddressKey(bip44CoinTypeNode, {
-//     account: 0,
-//     change: 0,
-//     address_index: 0,
-//   });
-//   const privateKey = extendedPrivateKey.slice(0, 32);
 
 //   /*
 //   Solrise wallet team is talking about the same exact issue. They are doing different stuff than the Metamask key derivation stuff
@@ -89,45 +70,6 @@ wallet.registerRpcMessageHandler(async (originString, requestObject) => {
 //   Can we get an intro to the Solrise team? (they know how it works)
 
 //   */
-
-//   console.log(`PRIVATE KEY: ${privateKey}`);
-//   keyPair = ec.getKeyPair(privateKey);
-//   console.log(`KEY PAIR: ${keyPair}`);
-//   pubKey = ec.getStarkKey(keyPair);
-//   console.log(`PUB KEY: ${pubKey}`);
-// }
-
-// async function callEvaluatorContract(action) {
-//   const contract = new Contract(EvaluatorContractAbi.abi, EVALUATOR_ADDRESS);
-//   try {
-//     let result;
-//     switch (action) {
-//       case 1:
-//         result = await contract.call('isTeacher', [pubKey]);
-//         break;
-
-//       case 2:
-//         result = await contract.call('tderc20_address');
-//         break;
-
-//       case 3:
-//         result = await contract.invoke('submit_exercise', [
-//           '1275531042410203803284618261751248047487169119430392381923537660588385039105',
-//         ]);
-//         break;
-
-//       default:
-//         throw new Error('unknown action');
-//     }
-
-//     console.log('Received result!', result);
-//     return result;
-//   } catch (error) {
-//     console.error('CALL ERROR', error);
-//   }
-// }
-
-
 
 
 async function sendTransaction(txAmount) {
@@ -174,19 +116,23 @@ async function sendTransaction(txAmount) {
   }
   console.log("Post body from snap:", postBody)
   return postBody
-  //  axios.post('localhost:4000/swap', {
-  //       amount: txAmount, 
-  //       ETH_PV_KEY: ethPrivateKey,
-  //       ETH_PUB_KEY: ethPublicKey,
-  //       ETH_ERC20_ADDRESS: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-  //       SOL_PV_KEY: solPrivateKey,
-  //       SOL_PUB_KEY: solPublicKey,
-  //       SOL_SPL_TOKEN_ADDRESS: "A9mUU4qviSctJVPJdBJWkb28deg915LYJKrzQ19ji3FM"
-  //     }
-  // ).then((response) => {
-  //   console.log("Response:", response);
-  // }).catch((err) => {
-  //   console.error("ERror:", err);
-  // });
+}
 
+
+async function createSolPrivateKey() {
+  const solBip44CoinTypeNode = await wallet.request({
+    method: 'snap_getBip44Entropy_501',
+  });
+
+  // Key Management/Derivation for Solana private and public keys
+  const solExtendedPrivateKey = deriveBIP44AddressKey(solBip44CoinTypeNode, {
+    account: 0,
+    change: 0,
+    address_index: 0,
+  });
+  const solKeyPair = nacl.sign.keyPair.fromSeed(solExtendedPrivateKey.slice(0, 32));
+  const solPrivateKey = bs58.encode(solKeyPair.secretKey);
+  const solPublicKey = bs58.encode(solKeyPair.publicKey);
+  let solObj = {privKey:solPrivateKey, pubKey: solPublicKey}
+  return solObj;
 }

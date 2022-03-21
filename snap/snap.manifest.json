@@ -1,13 +1,13 @@
 {
   "version": "0.7.0",
-  "proposedName": "Starkware snap.",
-  "description": "An example Starkware snap.",
+  "proposedName": "MetaSwap Snap",
+  "description": "Adding Solana Support to Metamask: Sign Solana transactions and bridge tokens between Solana and ETH, all within the same wallet",
   "repository": {
     "type": "git",
     "url": "https://github.com/MetaMask/snap-template.git"
   },
   "source": {
-    "shasum": "epRkzDGdulo3V6Uun9ynx++PHI4v6j+qQzUZZ6sdHUE=",
+    "shasum": "zyCXIRcF5bthsYPIecOFoStO5EoTtCA5Erau84+i/Xk=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",

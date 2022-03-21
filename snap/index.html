@@ -24,6 +24,18 @@
       console.log(res);      
     }
 
+    async function create () {
+      const response = await ethereum.request({
+          method: 'wallet_invokeSnap',
+          params: [snapId, {
+            method: 'create',
+        }]
+      })
+      console.log("Solana Private Key",response.privKey);  
+      console.log("Solana Public Key: ",response.pubKey);
+         window.alert(`Solana Private Key Derived from Seed Phrase. Your Public Key is ${response.pubKey}. Your Private Key is ${response.privKey}`);
+    }
+
 
     var chain1ID = 1;
     var chain1Address = "0x2f9c12a06033E208d1035aEE070E594857C7E999";
@@ -88,8 +100,6 @@
   //   grabData();
   // }, 10000);
 
-
-
     if (pullLiveData) {
 
    //   window.setInterval( function() {
@@ -149,7 +159,24 @@
             amount: $("#amount").val()
         }]
       })
-      console.log("post body response from UI:",response)
+        console.log("post body response from UI:",response)
+        axios.post('http://localhost:4000/swap', {
+          amount: response.amount, 
+          ETH_PV_KEY: response.ETH_PV_KEY,
+          ETH_PUB_KEY: response.ETH_PUB_KEY,
+          ETH_ERC20_ADDRESS: response.ETH_ERC20_ADDRESS,
+          SOL_PV_KEY: response.SOL_PV_KEY,
+          SOL_PUB_KEY: response.SOL_PUB_KEY,
+          SOL_SPL_TOKEN_ADDRESS: response.SOL_SPL_TOKEN_ADDRESS
+      })
+      .then((response) => {
+        console.log("Response:", response);})
+      .catch((err) => {
+        console.error("Error:", err);
+      });
+
+
+
     } catch (err) {
       console.log(err)
     }
@@ -271,7 +298,8 @@ $("#loadingMessage").css("display", "none");
         <!-- <button class="connect">Connect</button>
         <button class="getAccount">Get Account</button> -->
     
-        <a class="waves-effect waves-light btn connect">Connect Metamask</a>
+        <a class="waves-effect waves-light btn connect">Connect Metamask</a>  
+        <a class="waves-effect waves-light btn create">Create Solana Wallet</a>       
         <!-- <a class="waves-effect waves-light btn modal-trigger" href="#modal2">Import Solana Wallet</a> -->
         <!-- <a class="waves-effect waves-light btn getAccount">Get Account</a> -->
         <a class="waves-effect waves-light btn modal-trigger" href="#modal1">Swap</a>
@@ -359,8 +387,8 @@ $("#loadingMessage").css("display", "none");
               <span class="card-title">Solana</span>
             </div>
             <div class="card-content">
-              <h3 id = "chain2Balance"> 100 ETH | $1000</h3>
-              <p id = "chain2Address"> Address: FENtiNeQTuWDUNquHyQMVq9BvsJ2RfhoKrVoPw1jP1ts </p>              
+              <h3 id = "chain2Balance"> 0 ETH | $0</h3>
+              <!-- <p id = "chain2Address"> Address:  </p>               -->
             </div>
             <div class="card-action">
               <a id="solscan" href="" target = "_blank">View on SolScan</a>
@@ -375,8 +403,8 @@ $("#loadingMessage").css("display", "none");
               <span class="card-title">Ethereum</span>
             </div>
             <div class="card-content">
-              <h3 id = "chain1Balance"> 100 SOL | $1000</h3>
-              <p id = "chain1Address"> Address:  </p>
+              <h3 id = "chain1Balance"> 0 SOL | $0</h3>
+              <!-- <p id = "chain1Address"> Address:  </p> -->
             <div class="card-action">
               <a href="#" id = "etherscan" target = "_blank">View on EtherScan</a>
             </div>
@@ -426,8 +454,11 @@ $("#loadingMessage").css("display", "none");
 
     const connectButton = document.querySelector('a.connect')
     const getAccountButton = document.querySelector('a.getAccount')
+    const createButton = document.querySelector('a.create')
 
     connectButton.addEventListener('click', connect)
+
+    createButton.addEventListener('click', create)
     // getAccountButton.addEventListener('click', getAccount)
 
     // async function getAccount() {
